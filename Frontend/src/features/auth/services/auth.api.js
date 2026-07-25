@@ -60,7 +60,11 @@ export async function getMe() {
         return response.data
 
     } catch (err) {
-        console.log(err)
+        // A 401 here just means "not logged in yet" — expected, not an error.
+        if (err.response?.status !== 401) {
+            console.log(err)
+        }
+        return null
     }
 
 }
