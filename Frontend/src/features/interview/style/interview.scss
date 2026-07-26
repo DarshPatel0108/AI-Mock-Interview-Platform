@@ -508,3 +508,52 @@ $severity-low: #3fb950;
         border-color: rgba($severity-low, 0.25);
     }
 }
+
+@media (max-width: 960px) {
+    .interview-page {
+        padding: 1rem;
+    }
+
+    .interview-layout {
+        flex-direction: column;
+        max-width: 100%;
+    }
+
+    .interview-nav,
+    .interview-sidebar {
+        width: 100%;
+        padding: 1rem;
+    }
+
+    .interview-content {
+        padding: 1.25rem;
+        max-height: none;
+    }
+
+    .interview-divider {
+        display: none;
+    }
+
+    .q-card__header,
+    .interview-nav__item,
+    .interview-sidebar,
+    .button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .interview-page {
+        padding: 0.75rem;
+    }
+
+    .interview-content {
+        padding: 1rem;
+    }
+
+    .interview-nav,
+    .interview-sidebar,
+    .page-footer {
+        padding: 0.85rem;
+    }
+}
