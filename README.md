@@ -1,5 +1,9 @@
 # AI Mock Interview Platform
 
+**🔗 Live Demo:** [https://ai-mock-interview-platform-frontend-wfsy.onrender.com](https://ai-mock-interview-platform-frontend-wfsy.onrender.com)
+
+> Hosted on Render's free tier — the backend spins down after periods of inactivity, so the first request (especially resume/report generation) may take 30-60 seconds to respond while it wakes up.
+
 An AI-powered platform that helps candidates prepare for job interviews. Users upload their resume, a self description, and a job description, and the app generates a personalized interview report — including likely technical and behavioral questions, skill gap analysis, and a day-by-day preparation plan. It can also generate a tailored, ATS-friendly resume PDF based on the same inputs.
 
 ## Features
@@ -32,6 +36,11 @@ An AI-powered platform that helps candidates prepare for job interviews. Users u
 - Axios for API calls
 - Sass for styling
 
+**Hosting**
+- Backend: Render (Node Web Service)
+- Frontend: Render (Static Site)
+- Database: MongoDB Atlas
+
 ## Project Structure
 
 ```
@@ -54,7 +63,7 @@ An AI-powered platform that helps candidates prepare for job interviews. Users u
         └── style/                # Shared styles
 ```
 
-## Getting Started
+## Getting Started (Local Development)
 
 ### Prerequisites
 
@@ -82,6 +91,7 @@ Create a `.env` file inside the `Backend` folder:
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 GOOGLE_GENAI_API_KEY=your_google_genai_api_key
+NODE_ENV=development
 ```
 
 | Variable | Description |
@@ -89,6 +99,9 @@ GOOGLE_GENAI_API_KEY=your_google_genai_api_key
 | `MONGO_URI` | MongoDB connection string (local or Atlas) |
 | `JWT_SECRET` | Secret used to sign/verify JWTs — use a long, random string |
 | `GOOGLE_GENAI_API_KEY` | API key for the Google Gemini API, used to generate interview reports and resumes |
+| `NODE_ENV` | Set to `development` locally, `production` when deployed (controls cookie `secure`/`sameSite` behavior) |
+| `PORT` | Optional. Defaults to `3000` if not set |
+| `FRONTEND_URL` | Optional. Comma-separated list of additional allowed CORS origins beyond localhost — used in production |
 
 Start the backend:
 
@@ -96,17 +109,45 @@ Start the backend:
 npm run dev
 ```
 
-The server runs on **http://localhost:3000**.
+The server runs on **http://localhost:3000** by default (or the port set via `PORT`).
 
 ### 3. Frontend setup
 
 ```bash
 cd Frontend
 npm install
+```
+
+Optionally create a `.env` file inside the `Frontend` folder to point at a non-default backend URL:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+If omitted, it falls back to `http://localhost:3000` automatically.
+
+```bash
 npm run dev
 ```
 
-The frontend runs on **http://localhost:5173** (the backend's CORS config expects this origin).
+The frontend runs on **http://localhost:5173** (the backend's CORS config allows this origin by default).
+
+## Deployment
+
+This project is deployed on [Render](https://render.com) — backend as a Web Service, frontend as a Static Site — with [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) as the database.
+
+**Backend (Web Service)**
+- Root directory: `backend`
+- Build command: `npm install && npx puppeteer browsers install chrome`
+- Start command: `npm start`
+- Environment variables: `MONGO_URI`, `JWT_SECRET`, `GOOGLE_GENAI_API_KEY`, `NODE_ENV=production`, `FRONTEND_URL` (set to the deployed frontend URL), `PUPPETEER_CACHE_DIR=/opt/render/project/.cache/puppeteer`
+
+**Frontend (Static Site)**
+- Root directory: `Frontend`
+- Build command: `npm install && npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_URL` (set to the deployed backend URL)
+- Redirect/Rewrite rule: `/*` → `/index.html` (Rewrite) — required for client-side routing to work on page refresh
 
 ## API Overview
 
@@ -130,8 +171,10 @@ The frontend runs on **http://localhost:5173** (the backend's CORS config expect
 
 ## Notes
 
-- The backend port (`3000`) and the allowed CORS origin (`http://localhost:5173`) are currently hardcoded in `Backend/src/app.js` and `Backend/server.js` — update these directly in code if you deploy or change ports.
+- The backend port defaults to `3000` locally but respects `process.env.PORT` in production (required by Render). CORS origins combine hardcoded localhost URLs with any origins listed in `FRONTEND_URL`.
+- Auth cookies use `secure` + `sameSite: none` only when `NODE_ENV=production`, since the deployed frontend and backend live on different domains and need cross-site cookies to work.
 - The AI service uses the `gemini-3-flash-preview` model. If Google rotates/deprecates preview model names in the future, update the model string in `Backend/src/services/ai.service.js`.
+- Puppeteer requires an explicit Chrome install step and a fixed `PUPPETEER_CACHE_DIR` on Render — without these, PDF generation fails with a "Could not find Chrome" error at runtime.
 
 ## License
 
